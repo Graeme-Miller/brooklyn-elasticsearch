@@ -32,13 +32,10 @@ services:
 
         shell.env:
           VERSION: $brooklyn:config("install.version")
+          ELASTICSEARCH_PORT: $brooklyn:config("elasticsearch.port")
 
         brooklyn.config:
           elasticsearch.port: 9200
-          elasticsearch.config:
-            discovery.zen.ping.multicast.enabled: false
-            discovery.zen.ping.unicast.enabled: true
-            http.port: 9200 #$brooklyn:config("elasticsearch.port")
 
         install.command: |
           sudo apt-get update
@@ -48,12 +45,15 @@ services:
           echo "deb http://packages.elastic.co/elasticsearch/1.7/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.7.list
           sudo apt-get update && sudo apt-get -y install elasticsearch
 
-        # customize.command: |
-        #   sudo mkdir -p /etc/elasticsearch
-        #   $brooklyn:formatString("echo %s | sudo tee /etc/elasticsearch/elasticsearch.yml", $brooklyn:config("elasticsearch.config"))
+        customize.command: $brooklyn:formatString(" |
+          sudo rm -fr sudo tee /etc/elasticsearch/elasticsearch.yml;
+          echo discovery.zen.ping.multicast.enabled: false | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
+          echo discovery.zen.ping.unicast.enabled: true | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
+          echo http.port: %s | sudo tee -a /etc/elasticsearch/elasticsearch.yml;", $brooklyn:config("elasticsearch.port"))
 
-        launch.command: |
-          sudo service elasticsearch start
+        launch.command:  sudo service elasticsearch start
+
+        stop.command: sudo service elasticsearch stop
 
         checkRunning.command: |
           $brooklyn:formatString("counter=`wget -T 15 -q -O- %s:%s | grep -c \"status. : 200\"`; if [ $counter -eq 0 ]; then exit 1; fi",
@@ -65,7 +65,7 @@ services:
             brooklyn.config:
               enricher.sourceSensor: $brooklyn:sensor("host.address")
               enricher.targetSensor: $brooklyn:sensor("url")
-              enricher.targetValue: $brooklyn:formatString("http://%s/", $brooklyn:attributeWhenReady("host.address"))
+              enricher.targetValue: $brooklyn:formatString("http://%s:%s/", $brooklyn:attributeWhenReady("host.address"), $brooklyn:config("elasticsearch.port"))
           - type: org.apache.brooklyn.enricher.stock.Propagator
             brooklyn.config:
               sensorMapping:
