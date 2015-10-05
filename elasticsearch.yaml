@@ -1,0 +1,72 @@
+name: ELK Stack
+location: named:softlayer-lon02
+services:
+- type: brooklyn.entity.group.DynamicCluster
+  initialSize: 2
+  name: Elasticsearch Cluster
+  id: elasticsearch-cluster
+
+  brooklyn.config:
+    install.version: 1.7.1
+
+  brooklyn.enrichers:
+    - type: org.apache.brooklyn.enricher.stock.Aggregator
+      brooklyn.config:
+        enricher.sourceSensor: $brooklyn:sensor("url")
+        enricher.targetSensor: $brooklyn:sensor("urls.list")
+        enricher.aggregating.fromMembers: true
+    - type: org.apache.brooklyn.enricher.stock.Joiner
+      brooklyn.config:
+        enricher.sourceSensor: $brooklyn:sensor("urls.list")
+        enricher.targetSensor: $brooklyn:sensor("urls.list.string")
+        uniqueTag: urls.list.string
+
+  memberSpec:
+    $brooklyn:entitySpec:
+      - type: brooklyn.entity.basic.VanillaSoftwareProcess
+        name: Elasticsearch-node
+
+        provisioning.properties:
+          osFamily: ubuntu
+          inboundPorts: $brooklyn:config("elasticsearch.port")
+
+        shell.env:
+          VERSION: $brooklyn:config("install.version")
+
+        brooklyn.config:
+          elasticsearch.port: 9200
+          elasticsearch.config:
+            discovery.zen.ping.multicast.enabled: false
+            discovery.zen.ping.unicast.enabled: true
+            http.port: 9200 #$brooklyn:config("elasticsearch.port")
+
+        install.command: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-7-jdk wget
+
+          wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+          echo "deb http://packages.elastic.co/elasticsearch/1.7/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.7.list
+          sudo apt-get update && sudo apt-get -y install elasticsearch
+
+        # customize.command: |
+        #   sudo mkdir -p /etc/elasticsearch
+        #   $brooklyn:formatString("echo %s | sudo tee /etc/elasticsearch/elasticsearch.yml", $brooklyn:config("elasticsearch.config"))
+
+        launch.command: |
+          sudo service elasticsearch start
+
+        checkRunning.command: |
+          $brooklyn:formatString("counter=`wget -T 15 -q -O- %s:%s | grep -c \"status. : 200\"`; if [ $counter -eq 0 ]; then exit 1; fi",
+          $brooklyn:attributeWhenReady("host.address"),
+          $brooklyn:config("elasticsearch.port"))
+
+        brooklyn.enricher:
+          - type: org.apache.brooklyn.enricher.stock.Transformer
+            brooklyn.config:
+              enricher.sourceSensor: $brooklyn:sensor("host.address")
+              enricher.targetSensor: $brooklyn:sensor("url")
+              enricher.targetValue: $brooklyn:formatString("http://%s/", $brooklyn:attributeWhenReady("host.address"))
+          - type: org.apache.brooklyn.enricher.stock.Propagator
+            brooklyn.config:
+              sensorMapping:
+                $brooklyn:sensor("url"): $brooklyn:sensor("org.apache.brooklyn.core.entity.Attributes", "main.uri")
