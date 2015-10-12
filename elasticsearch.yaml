@@ -22,7 +22,6 @@ services:
         enricher.sourceSensor: $brooklyn:sensor("urls.list")
         enricher.targetSensor: $brooklyn:sensor("urls.list.string")
         uniqueTag: urls.list.string
-        quote: true
     - type: org.apache.brooklyn.enricher.stock.Transformer
       brooklyn.config:
         enricher.sourceSensor: $brooklyn:sensor("urls.list.string")
@@ -32,7 +31,7 @@ services:
   memberSpec:
     $brooklyn:entitySpec:
       - type: brooklyn.entity.basic.VanillaSoftwareProcess
-        name: Elasticsearch-node
+        name: Elasticsearch Node
 
         provisioning.properties:
           osFamily: ubuntu
@@ -40,16 +39,24 @@ services:
             - $brooklyn:config("elasticsearch.http.port")
             - $brooklyn:config("elasticsearch.tcp.port")
 
-        shell.env:
-          VERSION: $brooklyn:config("install.version")
-
         install.command: |
+          $brooklyn:formatString("
           sudo apt-get update
           sudo apt-get install -y openjdk-7-jdk wget
 
           wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-          echo "deb http://packages.elastic.co/elasticsearch/1.7/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.7.list
-          sudo apt-get update && sudo apt-get -y install elasticsearch
+          echo \"deb http://packages.elastic.co/elasticsearch/1.7/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.7.list
+          echo \"deb http://packages.elastic.co/elasticsearch/1.6/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.6.list
+          echo \"deb http://packages.elastic.co/elasticsearch/1.5/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.5.list
+          echo \"deb http://packages.elastic.co/elasticsearch/1.4/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.4.list
+          echo \"deb http://packages.elastic.co/elasticsearch/1.3/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.3.list
+          echo \"deb http://packages.elastic.co/elasticsearch/1.2/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.2.list
+          echo \"deb http://packages.elastic.co/elasticsearch/1.1/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.1.list
+          echo \"deb http://packages.elastic.co/elasticsearch/1.0/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.0.list
+          sudo apt-get update && sudo apt-get -y install elasticsearch=%s
+          ",
+          $brooklyn:config("install.version")
+          )
 
         customize.command: |
           $brooklyn:formatString("
@@ -66,7 +73,7 @@ services:
           )
 
 
-        launch.command:  sudo service elasticsearch start
+        launch.command: sudo service elasticsearch start
 
         stop.command: sudo service elasticsearch stop
 
