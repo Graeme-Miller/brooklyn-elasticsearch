@@ -22,19 +22,42 @@ brooklyn.catalog:
     brooklyn.enrichers:
       - type: org.apache.brooklyn.enricher.stock.Aggregator
         brooklyn.config:
-          enricher.sourceSensor: $brooklyn:sensor("url")
-          enricher.targetSensor: $brooklyn:sensor("urls.list")
+          enricher.sourceSensor: $brooklyn:sensor("url.tcp")
+          enricher.targetSensor: $brooklyn:sensor("urls.tcp.list")
           enricher.aggregating.fromMembers: true
       - type: org.apache.brooklyn.enricher.stock.Joiner
         brooklyn.config:
-          enricher.sourceSensor: $brooklyn:sensor("urls.list")
-          enricher.targetSensor: $brooklyn:sensor("urls.list.string")
-          uniqueTag: urls.list.string
+          enricher.sourceSensor: $brooklyn:sensor("urls.tcp.list")
+          enricher.targetSensor: $brooklyn:sensor("urls.tcp.string")
+          uniqueTag: urls.quoted.string
       - type: org.apache.brooklyn.enricher.stock.Transformer
         brooklyn.config:
-          enricher.sourceSensor: $brooklyn:sensor("urls.list.string")
-          enricher.targetSensor: $brooklyn:sensor("urls.list.string.withBrackets")
-          enricher.targetValue: $brooklyn:formatString("[%s]", $brooklyn:attributeWhenReady("urls.list.string"))
+          enricher.sourceSensor: $brooklyn:sensor("urls.tcp.string")
+          enricher.targetSensor: $brooklyn:sensor("urls.tcp.withBrackets")
+          enricher.targetValue: $brooklyn:formatString("[%s]", $brooklyn:attributeWhenReady("urls.tcp.string"))
+      - type: org.apache.brooklyn.enricher.stock.Aggregator
+        brooklyn.config:
+          enricher.sourceSensor: $brooklyn:sensor("url.http")
+          enricher.targetSensor: $brooklyn:sensor("urls.http.list")
+          enricher.aggregating.fromMembers: true
+      - type: org.apache.brooklyn.enricher.stock.Joiner
+        brooklyn.config:
+          enricher.sourceSensor: $brooklyn:sensor("urls.http.list")
+          enricher.targetSensor: $brooklyn:sensor("urls.http.string")
+          uniqueTag: urls.http.quoted.string
+      - type: org.apache.brooklyn.enricher.stock.Transformer
+        brooklyn.config:
+          enricher.sourceSensor: $brooklyn:sensor("urls.http.string")
+          enricher.targetSensor: $brooklyn:sensor("urls.http.withBrackets")
+          enricher.targetValue: $brooklyn:formatString("[%s]", $brooklyn:attributeWhenReady("urls.http.string"))
+      - type: org.apache.brooklyn.enricher.stock.Aggregator
+        brooklyn.config:
+          enricher.sourceSensor: $brooklyn:sensor("host.address")
+          enricher.targetSensor: $brooklyn:sensor("host.address.first")
+          enricher.aggregating.fromMembers: true
+          enricher.transformation:
+           $brooklyn:object:
+             type: "org.apache.brooklyn.util.collections.CollectionFunctionals$FirstElementFunction"
 
     memberSpec:
       $brooklyn:entitySpec:
@@ -71,11 +94,11 @@ brooklyn.catalog:
             sudo rm -fr sudo tee /etc/elasticsearch/elasticsearch.yml;
             echo discovery.zen.ping.multicast.enabled: false | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
             echo discovery.zen.ping.unicast.enabled: true | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
-            echo discovery.zen.ping.unicast.hosts: %s | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
+            echo 'discovery.zen.ping.unicast.hosts: %s' | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
             echo http.port: %s | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
             echo transport.tcp.port: %s | sudo tee -a /etc/elasticsearch/elasticsearch.yml;
             ",
-            $brooklyn:component("parent", "").attributeWhenReady("urls.list.string.withBrackets"),
+            $brooklyn:component("parent", "").attributeWhenReady("urls.tcp.withBrackets"),
             $brooklyn:config("elasticsearch.http.port"),
             $brooklyn:config("elasticsearch.tcp.port")
             )
@@ -94,9 +117,10 @@ brooklyn.catalog:
             - type: org.apache.brooklyn.enricher.stock.Transformer
               brooklyn.config:
                 enricher.sourceSensor: $brooklyn:sensor("host.address")
-                enricher.targetSensor: $brooklyn:sensor("url")
-                enricher.targetValue: $brooklyn:formatString("\"%s:%s\"", $brooklyn:attributeWhenReady("host.address"), $brooklyn:config("elasticsearch.tcp.port"))
-            - type: org.apache.brooklyn.enricher.stock.Propagator
+                enricher.targetSensor: $brooklyn:sensor("url.tcp")
+                enricher.targetValue: $brooklyn:formatString("%s:%s", $brooklyn:attributeWhenReady("host.address"), $brooklyn:config("elasticsearch.tcp.port"))
+            - type: org.apache.brooklyn.enricher.stock.Transformer
               brooklyn.config:
-                sensorMapping:
-                  $brooklyn:sensor("url"): $brooklyn:sensor("org.apache.brooklyn.core.entity.Attributes", "main.uri")
+                enricher.sourceSensor: $brooklyn:sensor("host.address")
+                enricher.targetSensor: $brooklyn:sensor("url.http")
+                enricher.targetValue: $brooklyn:formatString("%s:%s", $brooklyn:attributeWhenReady("host.address"), $brooklyn:config("elasticsearch.http.port"))
