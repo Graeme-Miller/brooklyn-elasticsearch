@@ -5,6 +5,11 @@ brooklyn.catalog:
   name: Elasticsearch
   license: Apache-2.0
   issues_url: https://github.com/Graeme-Miller/brooklyn-elasticsearch/issues
+  publish:
+    description: Pure Brooklyn YAML blueprint to deploy a cluster of Elasticsearch nodes
+    license_code: Apache-2.0
+    overview: README.md
+    reference: catalog/reference.json
   item:
     type: brooklyn.entity.group.DynamicCluster
     initialSize: 2

@@ -1,0 +1,164 @@
+{
+  "entities" : [ {
+    "name" : "Elasticsearch",
+    "type" : "elasticsearch:1.0",
+    "description" : "A cluster of Elasticsearch nodes",
+    "iconUrl" : "https://avatars0.githubusercontent.com/u/6764390?v=3&s=400",
+    "config" : [ {
+      "name" : "cluster.initial.quorumSize",
+      "type" : "java.lang.Integer",
+      "description" : "Initial cluster quorum size - number of initial nodes that must have been successfully started to report success (if < 0, then use value of INITIAL_SIZE)",
+      "defaultValue" : -1,
+      "reconfigurable" : false,
+      "label" : "cluster.initial.quorumSize",
+      "links" : { }
+    }, {
+      "name" : "cluster.initial.size",
+      "type" : "java.lang.Integer",
+      "description" : "Initial cluster size",
+      "defaultValue" : 1,
+      "reconfigurable" : false,
+      "label" : "cluster.initial.size",
+      "links" : { }
+    }, {
+      "name" : "cluster.member.id",
+      "type" : "java.lang.Integer",
+      "description" : "The unique ID number (sequential) of a member of a cluster",
+      "reconfigurable" : false,
+      "label" : "cluster.member.id",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.availabilityZones",
+      "type" : "java.util.Collection",
+      "description" : "availability zones to use (if non-null, overrides other configuration)",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.availabilityZones",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.customChildFlags",
+      "type" : "java.util.Map",
+      "description" : "Additional flags to be passed to children when they are being created",
+      "defaultValue" : { },
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.customChildFlags",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.factory",
+      "type" : "org.apache.brooklyn.core.entity.factory.EntityFactory",
+      "description" : "factory for creating new cluster members",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.factory",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.firstmemberspec",
+      "type" : "org.apache.brooklyn.api.entity.EntitySpec",
+      "description" : "entity spec for creating new cluster members, used for the very first member if different",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.firstmemberspec",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.memberspec",
+      "type" : "org.apache.brooklyn.api.entity.EntitySpec",
+      "description" : "entity spec for creating new cluster members",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.memberspec",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.numAvailabilityZones",
+      "type" : "java.lang.Integer",
+      "description" : "number of availability zones to use (will attempt to auto-discover this number)",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.numAvailabilityZones",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.quarantineFailedEntities",
+      "type" : "java.lang.Boolean",
+      "description" : "If true, will quarantine entities that fail to start; if false, will get rid of them (i.e. delete them)",
+      "defaultValue" : true,
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.quarantineFailedEntities",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.quarantineFilter",
+      "type" : "com.google.common.base.Predicate",
+      "description" : "Quarantine the failed nodes that pass this filter (given the exception thrown by the node). Default is those that did not fail with NoMachinesAvailableException (Config ignored if quarantineFailedEntities is false)",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.quarantineFilter",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.removalstrategy",
+      "type" : "com.google.common.base.Function",
+      "description" : "strategy for deciding what to remove when down-sizing",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.removalstrategy",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.restartMode",
+      "type" : "java.lang.String",
+      "description" : "How this cluster should handle restarts; by default it is disallowed, but this key can specify a different mode. Modes supported by dynamic cluster are 'off', 'sequqential', or 'parallel'. However subclasses can define their own modes or may ignore this.",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.restartMode",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.zone.enable",
+      "type" : "java.lang.Boolean",
+      "description" : "Whether to use availability zones, or just deploy everything into the generic location",
+      "defaultValue" : false,
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.zone.enable",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.zone.failureDetector",
+      "type" : "org.apache.brooklyn.entity.group.DynamicCluster$ZoneFailureDetector",
+      "description" : "Zone failure detector",
+      "defaultValue" : "org.apache.brooklyn.entity.group.zoneaware.ProportionalZoneFailureDetector@4c724636",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.zone.failureDetector",
+      "links" : { }
+    }, {
+      "name" : "dynamiccluster.zone.placementStrategy",
+      "type" : "org.apache.brooklyn.entity.group.DynamicCluster$NodePlacementStrategy",
+      "description" : "Node placement strategy",
+      "defaultValue" : "org.apache.brooklyn.entity.group.zoneaware.BalancingNodePlacementStrategy@58aa5259",
+      "reconfigurable" : false,
+      "label" : "dynamiccluster.zone.placementStrategy",
+      "links" : { }
+    }, {
+      "name" : "enricher.service_state.children_and_members.quorum.running",
+      "type" : "org.apache.brooklyn.util.collections.QuorumCheck",
+      "description" : "Problems check from children actual states (lifecycle), applied by default to members and children, not checking upness, but requiring by default that none are on-fire",
+      "defaultValue" : "QuorumCheck[all;require=0,100.0%]",
+      "reconfigurable" : false,
+      "label" : "enricher.service_state.children_and_members.quorum.running",
+      "links" : { }
+    }, {
+      "name" : "enricher.service_state.children_and_members.quorum.up",
+      "type" : "org.apache.brooklyn.util.collections.QuorumCheck",
+      "description" : "Up check, applied by default to members, requiring at least one present and up",
+      "defaultValue" : "QuorumCheck[atLeastOne;require=1,0.0%]",
+      "reconfigurable" : false,
+      "label" : "enricher.service_state.children_and_members.quorum.up",
+      "links" : { }
+    }, {
+      "name" : "group.members.delegate",
+      "type" : "java.lang.Boolean",
+      "description" : "Deprecated: Add delegate child entities for members of the group",
+      "defaultValue" : false,
+      "reconfigurable" : false,
+      "label" : "group.members.delegate",
+      "links" : { }
+    }, {
+      "name" : "group.members.delegate.nameFormat",
+      "type" : "java.lang.String",
+      "description" : "Delegate members name format string (Use %s for the original entity display name)",
+      "defaultValue" : "%s",
+      "reconfigurable" : false,
+      "label" : "group.members.delegate.nameFormat",
+      "links" : { }
+    } ]
+  } ],
+  "policies" : [ ],
+  "enrichers" : [ ],
+  "locations" : [ ],
+  "locationResolvers" : [ ]
+}
