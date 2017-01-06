@@ -1,13 +1,15 @@
 brooklyn.catalog:
   id: elasticsearch
-  version: "1.1-SNAPSHOT"
+  publish:
+    version: "1.1-SNAPSHOT"
+    description: A cluster of Elasticsearch nodes
+    license_code: Apache-2.0
+    issues_url: https://github.com/Graeme-Miller/brooklyn-elasticsearch/issues
+    iconUrl: https://avatars0.githubusercontent.com/u/6764390?v=3&s=400
   items:
   - id: elasticsearch
     itemType: entity
-    iconUrl: https://avatars0.githubusercontent.com/u/6764390?v=3&s=400
     name: Elasticsearch
-    license: Apache-2.0
-    issues_url: https://github.com/Graeme-Miller/brooklyn-elasticsearch/issues
     item:
       type: brooklyn.entity.group.DynamicCluster
       initialSize: 2
