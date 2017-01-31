@@ -1,9 +1,8 @@
 brooklyn.catalog:
-  id: elasticsearch
-  version: "1.1-SNAPSHOT"
   items:
   - id: elasticsearch
     itemType: entity
+    version: "1.1-SNAPSHOT"
     iconUrl: https://avatars0.githubusercontent.com/u/6764390?v=3&s=400
     name: Elasticsearch
     license: Apache-2.0
@@ -73,6 +72,10 @@ brooklyn.catalog:
           type: elasticsearch-node
 
   - id: elasticsearch-node
+    version: "1.1-SNAPSHOT"
+    iconUrl: https://avatars0.githubusercontent.com/u/6764390?v=3&s=400
+    license: Apache-2.0
+    issues_url: https://github.com/Graeme-Miller/brooklyn-elasticsearch/issues
     name: "Elastic Search Node"
     itemType: entity
     item:
