@@ -1,6 +1,10 @@
 brooklyn.catalog:
+  publish:
+    license_code: Apache-2.0
   items:
   - id: elasticsearch
+    description: |
+      Elasticsearch is a search engine based on Lucene. It provides a distributed, multitenant-capable full-text search engine with an HTTP web interface and schema-free JSON documents
     itemType: entity
     version: "1.1-SNAPSHOT"
     iconUrl: https://avatars0.githubusercontent.com/u/6764390?v=3&s=400
