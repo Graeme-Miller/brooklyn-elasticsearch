@@ -100,6 +100,16 @@ brooklyn.catalog:
       provisioning.properties:
         osFamily: ubuntu
 
+      brooklyn.initializers:
+      - type: org.apache.brooklyn.core.sensor.StaticSensor
+        brooklyn.config:
+          name: http.port
+          static.value: $brooklyn:config("elasticsearch.http.port")
+      - type: org.apache.brooklyn.core.sensor.StaticSensor
+        brooklyn.config:
+          name: tcp.port
+          static.value: $brooklyn:config("elasticsearch.tcp.port")
+
       install.command: |
         $brooklyn:formatString("
         sudo apt-get update
