@@ -31,6 +31,16 @@ brooklyn.catalog:
         type: integer
         default: 9330
 
+      - name: elasticsearch.user
+        label: "Elastic Username"
+        type: String
+        default: admin-user
+
+      - name: elasticsearch.password
+        label: "Elastic password"
+        type: String
+        default: C!0ud50ft!
+
       brooklyn.enrichers:
         - type: org.apache.brooklyn.enricher.stock.Aggregator
           brooklyn.config:
@@ -97,6 +107,16 @@ brooklyn.catalog:
         type: integer
         default: 9330
 
+      - name: elasticsearch.user
+        label: "Elastic Username"
+        type: String
+        default: admin-user
+
+      - name: elasticsearch.password
+        label: "Elastic password"
+        type: String
+        default: C!0ud50ft!
+
       provisioning.properties:
         osFamily: ubuntu
 
@@ -109,6 +129,18 @@ brooklyn.catalog:
         brooklyn.config:
           name: tcp.port
           static.value: $brooklyn:config("elasticsearch.tcp.port")
+      - type: org.apache.brooklyn.core.sensor.StaticSensor
+        brooklyn.config:
+          name: user
+          static.value: $brooklyn:config("elasticsearch.user")
+      - type: org.apache.brooklyn.core.sensor.StaticSensor
+        brooklyn.config:
+          name: password
+          static.value: $brooklyn:config("elasticsearch.password")
+
+      shell.env:
+        USER: $brooklyn:config("elasticsearch.user")
+        PASSWORD: $brooklyn:config("elasticsearch.password")
 
       install.command: |
         $brooklyn:formatString("
@@ -125,8 +157,14 @@ brooklyn.catalog:
         echo \"deb http://packages.elastic.co/elasticsearch/1.1/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.1.list
         echo \"deb http://packages.elastic.co/elasticsearch/1.0/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.0.list
         sudo apt-get update && sudo apt-get -y install elasticsearch=%s
+        cd /usr/share/elasticsearch
+        sudo bin/plugin -i elasticsearch/license/latest
+        sudo bin/plugin -i elasticsearch/shield/latest
+        sudo bin/shield/esusers useradd %s -p %s -r admin
         ",
-        $brooklyn:config("install.version")
+        $brooklyn:config("install.version"),
+        $brooklyn:config("elasticsearch.user"),
+        $brooklyn:config("elasticsearch.password")
         )
 
       customize.command: |
@@ -149,7 +187,7 @@ brooklyn.catalog:
       stop.command: sudo service elasticsearch stop
 
       checkRunning.command: |
-        $brooklyn:formatString("counter=`wget -T 15 -q -O- %s:%s | grep -c \"status. : 200\"`; if [ $counter -eq 0 ]; then exit 1; fi",
+        $brooklyn:formatString("counter=`wget -T 15 --user=${USER} --password=${PASSWORD} -q -O- %s:%s | grep -c \"status. : 200\"`; if [ $counter -eq 0 ]; then exit 1; fi",
         $brooklyn:attributeWhenReady("host.address"),
         $brooklyn:config("elasticsearch.http.port"))
 
@@ -164,3 +202,4 @@ brooklyn.catalog:
             enricher.sourceSensor: $brooklyn:sensor("host.address")
             enricher.targetSensor: $brooklyn:sensor("url.http")
             enricher.targetValue: $brooklyn:formatString("%s:%s", $brooklyn:attributeWhenReady("host.address"), $brooklyn:config("elasticsearch.http.port"))
+

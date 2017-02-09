@@ -32,8 +32,11 @@ brooklyn.catalog:
           - type: org.apache.brooklyn.test.framework.TestHttpCall
             name: "1.3 Check API status"
             url: >
-              $brooklyn:formatString("http://%s/_cluster/health/",
+              $brooklyn:formatString("http://%s:%s@%s/_cluster/health/",
+              $brooklyn:entity($brooklyn:component("elasticsearch").attributeWhenReady("cluster.first.entity")).attributeWhenReady("user"),
+              $brooklyn:entity($brooklyn:component("elasticsearch").attributeWhenReady("cluster.first.entity")).attributeWhenReady("password"),
               $brooklyn:entity($brooklyn:component("elasticsearch").attributeWhenReady("cluster.first.entity")).attributeWhenReady("url.http"))
             applyAssertionTo: body
             assert:
             - matches: "(?s).*green.*number_of_nodes\":2.*"
+
