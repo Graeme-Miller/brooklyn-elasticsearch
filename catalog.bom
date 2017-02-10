@@ -157,14 +157,14 @@ brooklyn.catalog:
         echo \"deb http://packages.elastic.co/elasticsearch/1.1/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.1.list
         echo \"deb http://packages.elastic.co/elasticsearch/1.0/debian stable main\" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-1.0.list
         sudo apt-get update && sudo apt-get -y install elasticsearch=%s
+        if [ -n \"${USER}\" ]; then
         cd /usr/share/elasticsearch
         sudo bin/plugin -i elasticsearch/license/latest
         sudo bin/plugin -i elasticsearch/shield/latest
-        sudo bin/shield/esusers useradd %s -p %s -r admin
+        sudo bin/shield/esusers useradd ${USER} -p ${PASSWORD} -r admin
+        fi
         ",
-        $brooklyn:config("install.version"),
-        $brooklyn:config("elasticsearch.user"),
-        $brooklyn:config("elasticsearch.password")
+        $brooklyn:config("install.version")
         )
 
       customize.command: |
@@ -202,4 +202,3 @@ brooklyn.catalog:
             enricher.sourceSensor: $brooklyn:sensor("host.address")
             enricher.targetSensor: $brooklyn:sensor("url.http")
             enricher.targetValue: $brooklyn:formatString("%s:%s", $brooklyn:attributeWhenReady("host.address"), $brooklyn:config("elasticsearch.http.port"))
-
